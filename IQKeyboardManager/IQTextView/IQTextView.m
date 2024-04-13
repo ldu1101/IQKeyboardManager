@@ -1,7 +1,7 @@
 //
-//  IQTextView.m
-//  https://github.com/hackiftekhar/IQKeyboardManager
-//  Copyright (c) 2013-24 Iftekhar Qurashi.
+// IQTextView.m
+// https://github.com/hackiftekhar/IQKeyboardManager
+// Copyright (c) 2013-16 Iftekhar Qurashi.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <UIKit/UIKit.h>
-
 #import "IQTextView.h"
 
+#import <UIKit/NSTextContainer.h>
+#import <UIKit/UILabel.h>
+#import <UIKit/UINibLoading.h>
 
-NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 @interface IQTextView ()
 
-@property(nullable, nonatomic, strong) UILabel *placeholderLabel;
+@property(nullable, nonatomic, strong) UILabel *IQ_PlaceholderLabel;
 
 @end
 
-NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 @implementation IQTextView
 
 @synthesize placeholder = _placeholder;
-@synthesize placeholderLabel = _placeholderLabel;
+@synthesize IQ_PlaceholderLabel = _IQ_PlaceholderLabel;
 @synthesize placeholderTextColor = _placeholderTextColor;
 
 -(void)initialize
@@ -47,8 +46,8 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 
 -(void)dealloc
 {
-    [_placeholderLabel removeFromSuperview];
-    _placeholderLabel = nil;
+    [_IQ_PlaceholderLabel removeFromSuperview];
+    _IQ_PlaceholderLabel = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -71,19 +70,15 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 {
     if([[self text] length] || [[self attributedText] length])
     {
-        if (self.placeholderLabel.alpha != 0)
-        {
-            [self.placeholderLabel setAlpha:0];
-            [self setNeedsLayout];
-            [self layoutIfNeeded];
-        }
+        [self.IQ_PlaceholderLabel setAlpha:0];
     }
-    else if(self.placeholderLabel.alpha != 1)
+    else
     {
-        [self.placeholderLabel setAlpha:1];
-        [self setNeedsLayout];
-        [self layoutIfNeeded];
+        [self.IQ_PlaceholderLabel setAlpha:1];
     }
+    
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
 }
 
 - (void)setText:(NSString *)text
@@ -101,7 +96,7 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 -(void)setFont:(UIFont *)font
 {
     [super setFont:font];
-    self.placeholderLabel.font = self.font;
+    self.IQ_PlaceholderLabel.font = self.font;
     
     [self setNeedsLayout];
     [self layoutIfNeeded];
@@ -110,7 +105,7 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 -(void)setTextAlignment:(NSTextAlignment)textAlignment
 {
     [super setTextAlignment:textAlignment];
-    self.placeholderLabel.textAlignment = textAlignment;
+    self.IQ_PlaceholderLabel.textAlignment = textAlignment;
     
     [self setNeedsLayout];
     [self layoutIfNeeded];
@@ -119,14 +114,14 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 -(void)layoutSubviews
 {
     [super layoutSubviews];
-    self.placeholderLabel.frame = [self placeholderExpectedFrame];
+    self.IQ_PlaceholderLabel.frame = [self placeholderExpectedFrame];
 }
 
 -(void)setPlaceholder:(NSString *)placeholder
 {
     _placeholder = placeholder;
     
-    self.placeholderLabel.text = placeholder;
+    self.IQ_PlaceholderLabel.text = placeholder;
     [self refreshPlaceholder];
 }
 
@@ -134,14 +129,14 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 {
     _attributedPlaceholder = attributedPlaceholder;
     
-    self.placeholderLabel.attributedText = attributedPlaceholder;
+    self.IQ_PlaceholderLabel.attributedText = attributedPlaceholder;
     [self refreshPlaceholder];
 }
 
 -(void)setPlaceholderTextColor:(UIColor*)placeholderTextColor
 {
     _placeholderTextColor = placeholderTextColor;
-    self.placeholderLabel.textColor = placeholderTextColor;
+    self.IQ_PlaceholderLabel.textColor = placeholderTextColor;
 }
 
 -(UIEdgeInsets)placeholderInsets
@@ -154,38 +149,37 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
     UIEdgeInsets placeholderInsets = [self placeholderInsets];
     CGFloat maxWidth = CGRectGetWidth(self.frame)-placeholderInsets.left-placeholderInsets.right;
     
-    CGSize expectedSize = [self.placeholderLabel sizeThatFits:CGSizeMake(maxWidth, CGRectGetHeight(self.frame)-placeholderInsets.top-placeholderInsets.bottom)];
+    CGSize expectedSize = [self.IQ_PlaceholderLabel sizeThatFits:CGSizeMake(maxWidth, CGRectGetHeight(self.frame)-placeholderInsets.top-placeholderInsets.bottom)];
     
     return CGRectMake(placeholderInsets.left, placeholderInsets.top, maxWidth, expectedSize.height);
 }
 
--(UILabel*)placeholderLabel
+-(UILabel*)IQ_PlaceholderLabel
 {
-    if (_placeholderLabel == nil)
+    if (_IQ_PlaceholderLabel == nil)
     {
-        _placeholderLabel = [[UILabel alloc] init];
-        _placeholderLabel.autoresizingMask = (UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight);
-        _placeholderLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        _placeholderLabel.numberOfLines = 0;
-        _placeholderLabel.font = self.font;
-        _placeholderLabel.textAlignment = self.textAlignment;
-        _placeholderLabel.backgroundColor = [UIColor clearColor];
-        _placeholderLabel.isAccessibilityElement = NO;
+        _IQ_PlaceholderLabel = [[UILabel alloc] init];
+        _IQ_PlaceholderLabel.autoresizingMask = (UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight);
+        _IQ_PlaceholderLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        _IQ_PlaceholderLabel.numberOfLines = 0;
+        _IQ_PlaceholderLabel.font = self.font;
+        _IQ_PlaceholderLabel.textAlignment = self.textAlignment;
+        _IQ_PlaceholderLabel.backgroundColor = [UIColor clearColor];
         #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000
-            if (@available(iOS 13.0, *))
-            {
-                _placeholderLabel.textColor = [UIColor placeholderTextColor];
-            }
-            else
+            if (@available(iOS 13.0, *)) {
+                _IQ_PlaceholderLabel.textColor = [UIColor systemGrayColor];
+            } else
         #endif
             {
-                _placeholderLabel.textColor = [UIColor lightTextColor];
+        #if __IPHONE_OS_VERSION_MIN_REQUIRED < 130000
+                _IQ_PlaceholderLabel.textColor = [UIColor lightTextColor];
+        #endif
             }
-        _placeholderLabel.alpha = 0;
-        [self addSubview:_placeholderLabel];
+        _IQ_PlaceholderLabel.alpha = 0;
+        [self addSubview:_IQ_PlaceholderLabel];
     }
     
-    return _placeholderLabel;
+    return _IQ_PlaceholderLabel;
 }
 
 //When any text changes on textField, the delegate getter is called. At this time we refresh the textView's placeholder
@@ -197,8 +191,7 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
 
 -(CGSize)intrinsicContentSize
 {
-    if (self.hasText)
-    {
+    if (self.hasText) {
         return [super intrinsicContentSize];
     }
     
@@ -208,22 +201,6 @@ NS_EXTENSION_UNAVAILABLE_IOS("Unavailable in extension")
     newSize.height = [self placeholderExpectedFrame].size.height + placeholderInsets.top + placeholderInsets.bottom;
     
     return newSize;
-}
-
-- (CGRect)caretRectForPosition:(UITextPosition *)position {
-    
-    CGRect originalRect = [super caretRectForPosition:position];
-        // When placeholder is visible and text alignment is centered
-    if (_placeholderLabel.alpha == 1 && self.textAlignment == NSTextAlignmentCenter) {
-        // Calculate the width of the placeholder text
-        CGSize textSize = [_placeholderLabel.text sizeWithAttributes:@{NSFontAttributeName:_placeholderLabel.font}];
-        // Calculate the starting x position of the centered placeholder text
-        CGFloat centeredTextX = (self.bounds.size.width - textSize.width) / 2;
-        // Update the caret position to match the starting x position of the centered text
-        originalRect.origin.x = centeredTextX;
-    }
-    
-    return originalRect;
 }
 
 @end
